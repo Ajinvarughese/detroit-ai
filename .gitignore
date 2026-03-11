@@ -1,0 +1,9 @@
+### Py Cache ###
+__pycache__/
+
+### INTELLIJ ##
+.idea/
+
+
+### ENV ###
+.env
