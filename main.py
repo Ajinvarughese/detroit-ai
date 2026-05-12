@@ -7,4 +7,7 @@ app = FastAPI()
 
 @app.post("/ai/questionnaire")
 async def questionnaire(data: QuestionnaireRequest):
-    return generate_questionnaire(data)
+    print("hello")
+    question = generate_questionnaire(data)
+    print(question)
+    return question

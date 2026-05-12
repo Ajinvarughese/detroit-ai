@@ -48,71 +48,60 @@ def generate_questionnaire(data: QuestionnaireRequest) -> List[Question]:
     client = get_client()
 
     messages = [
-        {
-            "role": "system",
-    "content": f"""
-You are an expert sustainability questionnaire generator for a banking system.
+    {
+        "role": "system",
+        "content": f"""
+You generate sustainability loan questionnaires.
 
-Your task is to create a questionnaire used to evaluate whether a loan applicant
-qualifies for sustainable finance.
-
-The questionnaire MUST follow the bank taxonomy rules provided below.
-
-Instructions:
-- Use the taxonomy rules to design evaluation questions.
-- Questions should measure sustainability impact, environmental practices,
-  governance, and risk.
-- Each question must contain choices with scores.
-- Positive scores represent sustainable or desirable outcomes.
-- Negative scores represent unsustainable or risky outcomes.
-- Scores must reflect the evaluation logic from the taxonomy.
-- Questions must be relevant to the loan category.
-
-Taxonomy rules:
+Rules:
 {rules}
 
-Return ONLY valid JSON. """
-+"""
-Response format:
+Requirements:
+- Generate {num_questions} relevant questions.
+- Use taxonomy rules.
+- Include 3-5 choices per question.
+- Positive score = sustainable.
+- Negative score = risky.
+- questionType must be RADIO | CHECKBOX | DROPDOWN | TEXT.
+
+Return ONLY valid JSON.
+
+Format:
 [
-  {
+  {{
     "questionText": "string",
-    "questionType": "TEXT | CHECKBOX | RADIO | DROPDOWN",
+    "questionType": "RADIO",
     "choices": [
-      {
+      {{
         "choiceText": "string",
-        "score": number
-      }
+        "score": 1
+      }}
     ]
-  }
+  }}
 ]
 """
-        },
-        {
-            "role": "user",
-            "content": f"""
-Generate {num_questions} questionnaire questions about:
-
-{topic}
-
-loan category: {loan_category}
-Each question must have 3-5 options with scores.
-Return only JSON.
+    },
+    {
+        "role": "user",
+        "content": f"""
+Topic: {topic}
+Loan category: {loan_category}
 """
-        }
-    ]
+    }
+]
 
     completion = client.chat.completions.create(
-        model="meta/llama-3.1-70b-instruct",
+        model="openai/gpt-oss-120b",
         messages=messages,
         temperature=0.3,
-        max_tokens=2048
+        max_tokens=8192
     )
 
     response = safe_message_content(completion.choices[0].message.content)
 
-    # 🔧 Remove markdown code blocks like ```json ... ```
     response = response[response.find("["):response.rfind("]")+1]
+
+    print(response)  
 
     data = json.loads(response)
 
